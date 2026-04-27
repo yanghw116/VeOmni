@@ -55,7 +55,7 @@ from veomni.models.transformers.qwen3_5.qwen3_5_npu_patch_gen_config import (
     qwen3_5_gated_deltanet_init_patched,
     qwen3_5_model_get_image_features,
     qwen3_5_model_get_placeholder_mask,
-    qwen3_5_moe_rmsnorm_forward_patched,
+    qwen3_5_rmsnorm_forward_patched,
     qwen3_5_vision_model_dummy_forward,
     qwen3_5_vision_model_fast_pos_embed_interpolate,
     qwen3_5_vision_model_forward,
@@ -124,7 +124,7 @@ gather_heads_scatter_seq = None
 
 config.override_method(
     "Qwen3_5MoeRMSNorm.forward",
-    replacement=qwen3_5_moe_rmsnorm_forward_patched,
+    replacement=qwen3_5_rmsnorm_forward_patched,
     description="Use eager Qwen3Next-style RMSNorm (1+weight centered formulation) for NPU patchgen",
 )
 
