@@ -45,6 +45,7 @@ from veomni.models.transformers.qwen3_5.qwen3_5_gpu_patch_gen_config import (
     qwen3_5_model_forward,
     qwen3_5_model_get_image_features,
     qwen3_5_model_get_placeholder_mask,
+    qwen3_5_rmsnorm_forward_patched,
     qwen3_5_vision_model_dummy_forward,
     qwen3_5_vision_model_fast_pos_embed_interpolate,
     qwen3_5_vision_model_forward,
@@ -105,6 +106,8 @@ config.add_post_import_block(
     # ── OpSlot declarations ──────────────────────────────────────────────────
     # Bound at model-build time by _bind_veomni_ops() in auto.py.
     from veomni.ops.dispatch import OpSlot
+    veomni_rms_norm = OpSlot("rms_norm", "qwen3_5")
+    veomni_apply_rotary_pos_emb = OpSlot("rotary_pos_emb", "partial")
     veomni_causal_lm_loss = OpSlot("cross_entropy_loss", "causal")
     veomni_rms_norm_gated = OpSlot("rms_norm_gated", "standard")
     veomni_causal_conv1d = OpSlot("causal_conv1d", "standard")
@@ -124,12 +127,11 @@ veomni_causal_conv1d = None  # OpSlot, declared in post-import block above
 veomni_chunk_gated_delta_rule = None  # OpSlot, declared in post-import block above
 
 
-@config.override_method(
+config.override_method(
     "Qwen3_5RMSNorm.forward",
+    replacement=qwen3_5_rmsnorm_forward_patched,
     description="Use fused rmsnorm to impl zero-centered rmsnorm (1+weight centered formulation)",
 )
-def qwen3_5_rmsnorm_forward_patched(self, x):
-    return torch_npu.npu_rms_norm(x, 1.0 + self.weight, self.eps)[0]
 
 
 @config.override_method(
@@ -149,6 +151,8 @@ def qwen3_5_rmsnorm_gated_forward_patched(self, hidden_states, gate=None):
     description="Use fused rope to impl partial rotary postion embedding",
 )
 def apply_rotary_pos_emb(q, k, cos, sin, unsqueeze_dim=1):
+    if veomni_apply_rotary_pos_emb.use_non_eager_impl:
+        return veomni_apply_rotary_pos_emb(q, k, cos, sin, unsqueeze_dim=unsqueeze_dim)
     cos = cos.unsqueeze(unsqueeze_dim)
     sin = sin.unsqueeze(unsqueeze_dim)
 
