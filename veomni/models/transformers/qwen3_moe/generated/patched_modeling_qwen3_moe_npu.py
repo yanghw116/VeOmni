@@ -10,15 +10,15 @@
 #
 #  Patches applied:
 #    - method_override: Qwen3MoeRMSNorm.forward
-#      OpSlot guard for Liger fused RMSNorm (standard formulation)
+#      OpSlot guard for NPU fused RMSNorm (standard formulation)
 #    - method_override: Qwen3MoeMLP.forward
-#      OpSlot guard for Liger fused SwiGLU MLP
+#      OpSlot guard for NPU fused SwiGLU MLP
 #    - class_replacement: Qwen3MoeExperts
 #      Use v5 gate_up_proj expert weights and explicit VeOmni fused MoE path
 #    - method_override: Qwen3MoeTopKRouter.forward
 #      Return raw pre-softmax logits as `router_logits` so HF's `load_balancing_loss_func` (which applies softmax internally) stays consistent with the HF aux-loss baseline.
 #    - function_replacement: apply_rotary_pos_emb
-#      OpSlot guard for Liger fused RoPE
+#      OpSlot guard for NPU fused RoPE
 #    - method_override: Qwen3MoeModel.forward
 #      Support SP in Qwen3MoeModel.forward
 #    - method_override: Qwen3MoeForCausalLM.forward
@@ -84,7 +84,7 @@ def rotate_half(x):
 
 # ======================================================================
 # [PATCHED FUNCTION] apply_rotary_pos_emb
-# Reason: OpSlot guard for Liger fused RoPE
+# Reason: OpSlot guard for NPU fused RoPE
 # Source: veomni.models.transformers.qwen3_moe.qwen3_moe_gpu_patch_gen_config
 # ======================================================================
 def apply_rotary_pos_emb(
