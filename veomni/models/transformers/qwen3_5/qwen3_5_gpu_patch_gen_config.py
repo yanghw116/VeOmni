@@ -71,10 +71,15 @@ config.add_import("torch.distributed", alias="dist", is_from_import=False)
 config.add_import("veomni.distributed.parallel_state", names=["get_parallel_state"])
 config.add_import("veomni.utils.device", names=["get_device_id"])
 config.add_import(
-    "veomni.distributed.sequence_parallel.ulysses",
-    names=["gather_seq_scatter_heads", "gather_heads_scatter_seq", "gather_outputs", "slice_input_tensor"],
+    "veomni.distributed.sequence_parallel",
+    names=[
+        "gather_seq_scatter_heads",
+        "gather_heads_scatter_seq",
+        "gather_outputs",
+        "slice_input_tensor",
+        "sp_pad_and_slice",
+    ],
 )
-config.add_import("veomni.distributed.sequence_parallel", names=["sp_pad_and_slice"])
 # Surface ``CausalLMOutputWithLogProbs`` in the generated file so the patched
 # text-only ``forward`` can return per-token log-probs as constructor fields.
 # Surface ``Qwen3_5CausalLMOutputWithLogProbs`` so the patched multimodal
